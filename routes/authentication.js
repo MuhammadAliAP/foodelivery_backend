@@ -1,5 +1,5 @@
 var express = require('express');
-const { userRegister, userLogin, checkUserExist } = require('../services/authentication.service');
+const { userRegister, userLogin, checkUserExist,tokenRefresh } = require('../services/authentication.service');
 var router = express.Router();
 
 
@@ -23,5 +23,8 @@ router.get("/user-exist", async (req, res, next) => {
     let responce = await checkUserExist(params)
     res.json(responce)
 });
+
+router.post("/refresh-token",tokenRefresh)
+
 
 module.exports = router;

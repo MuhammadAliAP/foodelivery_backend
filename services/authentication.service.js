@@ -2,6 +2,7 @@ const MongoDB = require("./mongodb.services")
 const { mongoConfig, tokenSecret } = require("../config")
 const bcrypt = require("bcrypt")
 const jwt = require("jsonwebtoken")
+const config = require("../config")
 
 const userRegister = async (user) => {
     try {
@@ -114,4 +115,94 @@ const checkUserExist = async (params) => {
 }
 
 
-module.exports = { userRegister, userLogin, checkUserExist }
+const tokenVerification = async (req, res, next) => {
+    console.log(`authentication.service | tokenVerification | ${req?.originalUrl}`);
+    try {
+        if (
+            req?.originalUrl.endsWith('/login') ||
+            req?.originalUrl.endsWith('/user-exist') ||
+            req?.originalUrl.endsWith('/register')
+        )
+            return next()
+        let token = req?.headers['authorization']
+        if (token && token.startsWith('Bearer')) {
+            token = token.slice(7, token?.length)
+            jwt.verify(token, config.tokenSecret,async (error, decoded) => {
+                if (error) {
+                    res.status(401).json({
+                        status: false,
+                        message: error?.name ? error?.name : "Invalid Token",
+                        error: `Invalid Token | ${error?.message}`
+                    })
+                } else {
+                    req['username'] = decoded?.username
+                    next()
+                }
+            })
+        } else {
+            res.status(401).json({
+                status: false,
+                message: error?.name ? error?.name : "Token is missing",
+                error: `Token is missing`
+            })
+        }
+
+    } catch (error) {
+        res.status(401).json({
+            status: false,
+            message: error?.message ? error?.message : "Authentication failed",
+            error: `Authentication failed| ${error?.message}`
+        })
+
+    }
+}
+
+
+const tokenRefresh = async (req, res) => {
+
+    console.log(`
+    authentication.service | TokenRefresh |${req?.originalUrl}
+    `);
+    try {
+        let token = req?.headers['authorization']
+        if (token && token.startsWith('Bearer')) {
+            token = token.slice(7, token?.length)
+            jwt.verify(token, config.tokenSecret,{ignoreExpiration:true},async (error, decoded) => {
+                if (error) {
+                    res.status(401).json({
+                        status: false,
+                        message: error?.name ? error?.name : "Invalid Token",
+                        error: `Invalid Token | ${error?.message}`
+                    })
+                } else {
+                    if (decoded?.username && decoded?.email) {
+                        let newToken = jwt.sign(
+                            { username: decoded?.username, email: decoded?.email },
+                            tokenSecret,
+                            { expiresIn: "24h" }
+                        )
+                        res.json({
+                            status: true,
+                            message: "Token refresh successful",
+                            data: newToken
+                        })
+                    } else {
+                        res.status(401).json({
+                            status: false,
+                            message: error?.name ? error?.name : "Token missing",
+                            error: `Token missing | ${error?.message}`
+                        })
+                    }
+
+                }
+            })
+        }
+    } catch (error) {
+        res.status(401).json({
+            status: false,
+            message: error?.name ? error?.name : "Token refresh faild",
+            error: `Token refresh faild | ${error?.message}`
+        })
+    }
+}
+module.exports = { userRegister, userLogin, checkUserExist, tokenVerification ,tokenRefresh}
