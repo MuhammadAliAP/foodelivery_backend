@@ -1,4 +1,5 @@
-{
+{ 
+  "$schema": "https://typedoc.org/schema.json",
   "name": "foodelivery-backend",
   "version": "0.0.0",
   "private": true,
@@ -19,7 +20,7 @@
   },
   "projectConfig": {
     "mongoConnectionUrl": "mongodb://127.0.0.1",
-    "serverIp": "192.168.1.5",
+    "serverIp": "192.168.1.2",
     "serverPort": 3000
   }
 }

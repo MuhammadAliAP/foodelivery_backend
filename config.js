@@ -6,6 +6,7 @@ module.exports = {
         databace: "foodelivery_db",
         collection: {
             USERS: "users",
+            RESTAURANTS:"restaurants"
         }
     },
     serverConfig:{
