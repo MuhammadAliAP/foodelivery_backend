@@ -20,7 +20,7 @@
   },
   "projectConfig": {
     "mongoConnectionUrl": "mongodb://127.0.0.1",
-    "serverIp": "192.168.1.2",
+    "serverIp": "192.168.1.4",
     "serverPort": 3000
   }
 }
